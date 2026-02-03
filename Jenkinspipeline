@@ -1,0 +1,51 @@
+pipeline{
+    agent any 
+    tools{
+        maven 'maven3'
+    }
+    
+    stages{
+        stage('code checkout'){
+            steps{
+                echo 'clone the code from github to jenkins workspace'
+                git branch: 'main', url: 'https://github.com/murthyvella/MAVEN-SAMPLEAPP-PROJECT.git'
+            }
+        }
+        stage('build the code'){
+            steps{
+                sh 'mvn clean package'
+            }
+        }
+         stage('test code'){
+            steps{
+                sh 'mvn test'
+            }
+        }
+         stage('image build'){
+            steps{
+                echo 'build the image for my application'
+                sh 'docker build -t maven-sampleapp-project:latest . '
+            }
+        }
+        stage('image tag'){
+            steps{
+                sh 'docker tag maven-sampleapp-project:latest murthyvella/maven-sampleapp:v1.0 '
+            }
+        }
+         stage('push to docker hub'){
+            steps{
+                withCredentials([usernamePassword(credentialsId: 'dockerpa', passwordVariable: 'dockerpass', usernameVariable: 'dockeruser')]) {
+                 sh 'docker login -u ${dockeruser} -p ${dockerpass} '
+                 sh 'docker push murthyvella/maven-sampleapp:v1.0 '
+                }
+               
+            }
+        }
+        stage('relese'){
+            steps{
+                echo 'application goes live'
+                sh 'docker run -d -p 7070:8080 --name myapp murthyvella/maven-sampleapp:v1.0'
+            }
+        }
+    }
+}
