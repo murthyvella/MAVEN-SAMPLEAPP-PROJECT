@@ -2,7 +2,7 @@
 FROM tomcat:9.0
 
 # Expose port 8080 to the outside world
-EXPOSE 8080
+EXPOSE 7070
 
 # Copy the war file to the webapps directory of Tomcat
 COPY target/*.war /usr/local/tomcat/webapps/
